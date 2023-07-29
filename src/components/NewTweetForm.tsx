@@ -36,6 +36,7 @@ function Form() {
       setInputValue("");
       if (session.status != "authenticated") return;
       trpcUtills.tweet.infiniteFeed.setInfiniteData({}, (old) => {
+        /* eslint-disable @typescript-eslint/prefer-optional-chain */
         if (old == null || old.pages[0] == null) return;
 
         const newCacheTweet = {

@@ -40,6 +40,7 @@ const ProfilePage: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({
     },
   });
 
+  /* eslint-disable @typescript-eslint/prefer-optional-chain */
   if (profile == null || profile.name == null) {
     return <ErrorPage statusCode={404} />;
   }
