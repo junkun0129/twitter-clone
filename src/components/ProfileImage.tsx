@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { VscAccount } from "react-icons/vsc";
 
 type ProfileImageProps = {
   src?: string | null;
@@ -11,7 +12,9 @@ function ProfileImage({ src, className = "" }: ProfileImageProps) {
     >
       {src ? (
         <Image src={src} alt="profile image" quality={100} fill></Image>
-      ) : null}
+      ) : (
+        <VscAccount className="h-full w-full" />
+      )}
     </div>
   );
 }

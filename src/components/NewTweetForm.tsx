@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import Button from "./Button";
+import { Button } from "./Button";
 import ProfileImage from "./ProfileImage";
 import {
   FormEvent,
@@ -25,6 +25,8 @@ function Form() {
     updateTextAreaSize(textArea);
     textAreaRef.current = textArea;
   }, []);
+
+  const trpcUtills = api.useContext();
   useLayoutEffect(() => {
     updateTextAreaSize(textAreaRef.current);
   }, [inputValue]);
@@ -32,6 +34,32 @@ function Form() {
   const createTweet = api.tweet.create.useMutation({
     onSuccess: (newTweet) => {
       setInputValue("");
+      if (session.status != "authenticated") return;
+      trpcUtills.tweet.infiniteFeed.setInfiniteData({}, (old) => {
+        if (old == null || old.pages[0] == null) return;
+
+        const newCacheTweet = {
+          ...newTweet,
+          likeCount: 0,
+          likedByMe: false,
+          user: {
+            id: session.data.user.id,
+            name: session.data.user.name,
+            image: session.data.user.image,
+          },
+        };
+
+        return {
+          ...old,
+          page: [
+            {
+              ...old.pages[0],
+              tweets: [newCacheTweet, ...old.pages[0].tweets],
+            },
+            ...old.pages.slice(1),
+          ],
+        };
+      });
     },
   });
   if (session.status !== "authenticated") return null;
