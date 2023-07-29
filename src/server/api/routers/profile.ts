@@ -1,12 +1,11 @@
-import { Prisma, PrismaClient } from "@prisma/client";
-import { DefaultArgs } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { inferAsyncReturnType } from "@trpc/server";
 import { z } from "zod";
+
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
-  createTRPCContext,
 } from "~/server/api/trpc";
 
 export const profileRouter = createTRPCRouter({
@@ -26,7 +25,9 @@ export const profileRouter = createTRPCRouter({
               : { where: { id: currentUserId } },
         },
       });
+
       if (profile == null) return;
+
       return {
         name: profile.name,
         image: profile.image,
@@ -36,14 +37,14 @@ export const profileRouter = createTRPCRouter({
         isFollowing: profile.followers.length > 0,
       };
     }),
-  toggleFllow: protectedProcedure
+  toggleFollow: protectedProcedure
     .input(z.object({ userId: z.string() }))
     .mutation(async ({ input: { userId }, ctx }) => {
       const currentUserId = ctx.session.user.id;
-
       const existingFollow = await ctx.prisma.user.findFirst({
         where: { id: userId, followers: { some: { id: currentUserId } } },
       });
+
       let addedFollow;
       if (existingFollow == null) {
         await ctx.prisma.user.update({
@@ -54,10 +55,14 @@ export const profileRouter = createTRPCRouter({
       } else {
         await ctx.prisma.user.update({
           where: { id: userId },
-          data: { followers: { connect: { id: currentUserId } } },
+          data: { followers: { disconnect: { id: currentUserId } } },
         });
         addedFollow = false;
       }
+
+      void ctx.revalidateSSG?.(`/profiles/${userId}`);
+      void ctx.revalidateSSG?.(`/profiles/${currentUserId}`);
+
       return { addedFollow };
     }),
 });
