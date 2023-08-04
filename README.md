@@ -1,6 +1,6 @@
-# Create T3 App
+# Twitter clone App
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `twitter-clone-app`.
+This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `Twitter clone App`.
 
 ## why I created this App?
 
